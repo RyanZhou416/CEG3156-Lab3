@@ -1,0 +1,46 @@
+# Quartus II build & intermediate files
+db/
+incremental_db/
+output_files/
+simulation/
+timing/
+greybox_tmp/
+hps_isw_handoff/
+
+# Quartus temporary / backup files
+*.bak
+*.qws
+*.ppf
+*.ddb
+*.cmp
+*.qdf
+*.csv
+
+# Programming files (binary)
+*.sof
+*.pof
+*.jdi
+*.pin
+*.summary
+*.done
+*.jic
+*.map
+*.fit
+*.asm
+*.sta
+*.flow
+
+# SignalTap
+*.stp
+
+# EDA tool output
+*.vo
+*.vho
+
+# Lock files
+*.flock
+
+# OS / IDE junk
+Thumbs.db
+.DS_Store
+*.log
