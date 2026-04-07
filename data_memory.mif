@@ -1,0 +1,15 @@
+DEPTH = 256;
+WIDTH = 8;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT
+BEGIN
+
+[00..FF] : 00;  -- default all zeros
+
+-- Pre-loaded values required by both benchmark programs
+00 : 55;        -- $2 = mem[0] = 0x55
+01 : AA;        -- $3 = mem[1] = 0xAA
+
+END;

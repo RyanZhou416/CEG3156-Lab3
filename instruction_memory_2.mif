@@ -1,0 +1,29 @@
+DEPTH = 256;
+WIDTH = 32;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT
+BEGIN
+
+[00..FF] : 00000000;  -- NOP
+
+-- Benchmark 2: control hazard test
+-- beq $1,$1,20 is always taken (tests pipeline flush on branch)
+
+00 : 8C020000;  -- lw  $2, 0($0)
+01 : 8C030001;  -- lw  $3, 1($0)
+02 : 00430822;  -- sub $1, $2, $3
+03 : 00232025;  -- or  $4, $1, $3
+04 : 10210005;  -- beq $1,$1,+20       always taken; word offset=+5, target=word 0x0A
+                --                     at byte 16, PC+4=20, target=20+20=40=word 0xA
+05 : AC040003;  -- sw  $4, 3($0)       skipped by branch
+06 : 00430820;  -- add $1, $2, $3      skipped
+07 : AC010004;  -- sw  $1, 4($0)       skipped
+08 : 8C020003;  -- lw  $2, 3($0)       skipped
+09 : 8C030004;  -- lw  $3, 4($0)       skipped
+0A : 0800000C;  -- j   12              jump to word 0x0C
+0B : 1021FFF4;  -- beq $1,$1,-44       offset=-12 (byte -48 from PC+4=48), target=0
+0C : 1022FFFE;  -- beq $1,$2,-8        offset=-2 (byte -8 from PC+4=52), target=word 0xB
+
+END;
