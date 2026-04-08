@@ -12,7 +12,32 @@ entity pipeline_processor is
         BranchOut      : out std_logic;
         ZeroOut        : out std_logic;
         MemWriteOut    : out std_logic;
-        RegWriteOut    : out std_logic
+        RegWriteOut    : out std_logic;
+
+        -- Debug: PC & instructions per pipeline stage
+        o_pc           : out std_logic_vector(7 downto 0);
+        o_if_instr     : out std_logic_vector(31 downto 0);
+        o_id_instr     : out std_logic_vector(31 downto 0);
+        o_ex_instr     : out std_logic_vector(31 downto 0);
+        o_mem_instr    : out std_logic_vector(31 downto 0);
+        o_wb_instr     : out std_logic_vector(31 downto 0);
+
+        -- Debug: data values
+        o_reg_data_1   : out std_logic_vector(7 downto 0);
+        o_reg_data_2   : out std_logic_vector(7 downto 0);
+        o_alu_result   : out std_logic_vector(7 downto 0);
+        o_wb_data      : out std_logic_vector(7 downto 0);
+        o_write_reg    : out std_logic_vector(2 downto 0);
+
+        -- Debug: hazard & forwarding
+        o_stall        : out std_logic;
+        o_forward_a    : out std_logic_vector(1 downto 0);
+        o_forward_b    : out std_logic_vector(1 downto 0);
+
+        -- Debug: flush & branch
+        o_branch_taken : out std_logic;
+        o_if_id_flush  : out std_logic;
+        o_id_ex_flush  : out std_logic
     );
 end entity pipeline_processor;
 
@@ -422,11 +447,17 @@ architecture structural of pipeline_processor is
     signal if_id_flush         : std_logic;
     signal id_ex_flush         : std_logic;
 
+    signal inst_ex_in          : std_logic_vector(31 downto 0);
     signal inst_ex             : std_logic_vector(31 downto 0);
+    signal inst_mem_in         : std_logic_vector(31 downto 0);
     signal inst_mem            : std_logic_vector(31 downto 0);
     signal inst_wb             : std_logic_vector(31 downto 0);
 
     signal ctrl_byte           : std_logic_vector(7 downto 0);
+
+    signal id_pc_in            : std_logic_vector(7 downto 0);
+    signal id_pc               : std_logic_vector(7 downto 0);
+    signal id_pc_load          : std_logic;
 
 begin
 
@@ -490,6 +521,18 @@ begin
             data_in_1 => id_jump_target,
             sel_line  => ctrl_jump,
             data_out  => pc_next
+        );
+
+    id_pc_in   <= (others => '0') when if_id_flush = '1' else pc_out;
+    id_pc_load <= if_id_flush or haz_ifid_write;
+
+    id_pc_reg: reg_8bit
+        port map (
+            data_in     => id_pc_in,
+            load_enable => id_pc_load,
+            GClock      => GClock,
+            GReset      => GReset,
+            data_out    => id_pc
         );
 
     ifid_reg: pipeline_reg_IF_ID
@@ -741,9 +784,12 @@ begin
             data_out  => wb_write_data
         );
 
+    inst_ex_in  <= x"00000000" when id_ex_flush = '1' else ifid_instruction;
+    inst_mem_in <= x"00000000" when pc_src = '1' else inst_ex;
+
     inst_ex_reg: reg_32bit
         port map (
-            data_in     => ifid_instruction,
+            data_in     => inst_ex_in,
             load_enable => '1',
             GClock      => GClock,
             GReset      => GReset,
@@ -752,7 +798,7 @@ begin
 
     inst_mem_reg: reg_32bit
         port map (
-            data_in     => inst_ex,
+            data_in     => inst_mem_in,
             load_enable => '1',
             GClock      => GClock,
             GReset      => GReset,
@@ -794,7 +840,7 @@ begin
     value_select_mux: mux_8to1_8bit
         port map (
             sel_line  => ValueSelect,
-            data_in_0 => pc_out,
+            data_in_0 => id_pc,
             data_in_1 => exmem_alu_result,
             data_in_2 => id_read_data_1,
             data_in_3 => id_read_data_2,
@@ -809,5 +855,23 @@ begin
     ZeroOut     <= exmem_zero;
     MemWriteOut <= exmem_mem_write;
     RegWriteOut <= memwb_reg_write;
+
+    o_pc           <= pc_out;
+    o_if_instr     <= if_instruction;
+    o_id_instr     <= ifid_instruction;
+    o_ex_instr     <= inst_ex;
+    o_mem_instr    <= inst_mem;
+    o_wb_instr     <= inst_wb;
+    o_reg_data_1   <= id_read_data_1;
+    o_reg_data_2   <= id_read_data_2;
+    o_alu_result   <= exmem_alu_result;
+    o_wb_data      <= wb_write_data;
+    o_write_reg    <= memwb_write_reg;
+    o_stall        <= haz_mux;
+    o_forward_a    <= forward_a;
+    o_forward_b    <= forward_b;
+    o_branch_taken <= pc_src;
+    o_if_id_flush  <= if_id_flush;
+    o_id_ex_flush  <= id_ex_flush;
 
 end architecture structural;
