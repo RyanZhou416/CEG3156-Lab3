@@ -254,7 +254,7 @@ architecture structural of pipeline_processor is
         port (
             GClock        : in  std_logic;
             GReset        : in  std_logic;
-            i_write_en    : in  std_logic;
+            i_if_id_write : in  std_logic;
             i_flush       : in  std_logic;
             i_pc_plus_4   : in  std_logic_vector(7 downto 0);
             i_instruction : in  std_logic_vector(31 downto 0);
@@ -267,7 +267,7 @@ architecture structural of pipeline_processor is
         port (
             GClock         : in  std_logic;
             GReset         : in  std_logic;
-            i_flush        : in  std_logic;
+            i_clear        : in  std_logic;
             i_pc_plus_4    : in  std_logic_vector(7 downto 0);
             i_read_data_1  : in  std_logic_vector(7 downto 0);
             i_read_data_2  : in  std_logic_vector(7 downto 0);
@@ -311,7 +311,7 @@ architecture structural of pipeline_processor is
             i_if_id_rt       : in  std_logic_vector(2 downto 0);
             o_pc_write       : out std_logic;
             o_if_id_write    : out std_logic;
-            o_hazard_mux     : out std_logic
+            o_id_ex_clear    : out std_logic
         );
     end component;
 
@@ -496,7 +496,7 @@ begin
         port map (
             GClock        => GClock,
             GReset        => GReset,
-            i_write_en    => haz_ifid_write,
+            i_if_id_write => haz_ifid_write,
             i_flush       => if_id_flush,
             i_pc_plus_4   => pc_plus_4,
             i_instruction => if_instruction,
@@ -563,14 +563,14 @@ begin
             i_if_id_rt       => id_rt,
             o_pc_write       => haz_pc_write,
             o_if_id_write    => haz_ifid_write,
-            o_hazard_mux     => haz_mux
+            o_id_ex_clear    => haz_mux
         );
 
     idex_reg: pipeline_reg_ID_EX
         port map (
             GClock         => GClock,
             GReset         => GReset,
-            i_flush        => id_ex_flush,
+            i_clear        => id_ex_flush,
             i_pc_plus_4    => ifid_pc_plus_4,
             i_read_data_1  => id_read_data_1,
             i_read_data_2  => id_read_data_2,

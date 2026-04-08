@@ -14,6 +14,7 @@ entity pipeline_reg_ID_EX is
         i_rs           : in  std_logic_vector(2 downto 0);
         i_rt           : in  std_logic_vector(2 downto 0);
         i_rd           : in  std_logic_vector(2 downto 0);
+        i_funct        : in  std_logic_vector(5 downto 0);
         -- EX control group
         i_reg_dst      : in  std_logic;
         i_alu_src      : in  std_logic;
@@ -33,6 +34,7 @@ entity pipeline_reg_ID_EX is
         o_rs           : out std_logic_vector(2 downto 0);
         o_rt           : out std_logic_vector(2 downto 0);
         o_rd           : out std_logic_vector(2 downto 0);
+        o_funct        : out std_logic_vector(5 downto 0);
         -- EX control group
         o_reg_dst      : out std_logic;
         o_alu_src      : out std_logic;
@@ -134,6 +136,12 @@ begin
                                data_in => i_rd(i), load_enable => load,
                                data_out => o_rd(i));
     end generate gen_rd;
+
+    gen_funct : for i in 5 downto 0 generate
+        r : reg_1bit port map (GClock => GClock, GReset => GReset,
+                               data_in => i_funct(i), load_enable => load,
+                               data_out => o_funct(i));
+    end generate gen_funct;
 
     -- ----------------------------------------------------------------
     -- EX control signals (gated by clear)
