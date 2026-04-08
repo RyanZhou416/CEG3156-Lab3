@@ -13,28 +13,20 @@ entity pipeline_processor is
         ZeroOut        : out std_logic;
         MemWriteOut    : out std_logic;
         RegWriteOut    : out std_logic;
-
-        -- Debug: PC & instructions per pipeline stage
         o_pc           : out std_logic_vector(7 downto 0);
         o_if_instr     : out std_logic_vector(31 downto 0);
         o_id_instr     : out std_logic_vector(31 downto 0);
         o_ex_instr     : out std_logic_vector(31 downto 0);
         o_mem_instr    : out std_logic_vector(31 downto 0);
         o_wb_instr     : out std_logic_vector(31 downto 0);
-
-        -- Debug: data values
         o_reg_data_1   : out std_logic_vector(7 downto 0);
         o_reg_data_2   : out std_logic_vector(7 downto 0);
         o_alu_result   : out std_logic_vector(7 downto 0);
         o_wb_data      : out std_logic_vector(7 downto 0);
         o_write_reg    : out std_logic_vector(2 downto 0);
-
-        -- Debug: hazard & forwarding
         o_stall        : out std_logic;
         o_forward_a    : out std_logic_vector(1 downto 0);
         o_forward_b    : out std_logic_vector(1 downto 0);
-
-        -- Debug: flush & branch
         o_branch_taken : out std_logic;
         o_if_id_flush  : out std_logic;
         o_id_ex_flush  : out std_logic

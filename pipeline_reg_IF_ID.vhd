@@ -5,8 +5,8 @@ entity pipeline_reg_IF_ID is
     port (
         GClock        : in  std_logic;
         GReset        : in  std_logic;
-        i_if_id_write : in  std_logic;  -- '0' = hold (stall)
-        i_flush       : in  std_logic;  -- '1' = clear to NOP (branch taken)
+        i_if_id_write : in  std_logic;
+        i_flush       : in  std_logic;
         i_pc_plus_4   : in  std_logic_vector(7 downto 0);
         i_instruction : in  std_logic_vector(31 downto 0);
         o_pc_plus_4   : out std_logic_vector(7 downto 0);
@@ -36,8 +36,6 @@ architecture structural of pipeline_reg_IF_ID is
         );
     end component;
 
-    -- When flushing, force zeros into the register regardless of stall state.
-    -- Flush overrides stall: eff_load = flush OR if_id_write
     signal eff_load        : std_logic;
     signal eff_instruction : std_logic_vector(31 downto 0);
     signal eff_pc_plus_4   : std_logic_vector(7 downto 0);
@@ -46,7 +44,6 @@ begin
 
     eff_load <= i_flush or i_if_id_write;
 
-    -- On flush insert NOP (all zeros), otherwise pass through
     gen_instr_flush : for i in 31 downto 0 generate
         eff_instruction(i) <= '0' when i_flush = '1' else i_instruction(i);
     end generate gen_instr_flush;
